@@ -2,10 +2,9 @@ package handler
 
 import (
 	"context"
-	"io"
 	"net/http"
-
-	"github.com/google/uuid"
+	"vdo-be/internal/domain/video"
+	"vdo-be/internal/infra/storage"
 )
 
 func uploadVideo(w http.ResponseWriter, r *http.Request) {
@@ -17,23 +16,24 @@ func uploadVideo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Create a Cloud Storage client
+	// Create video domain object with metadata
+	video := &video.Video{
+		Title:  r.FormValue("title"),
+		UserID: 1,
+		Metadata: map[string]string{
+			"category": r.FormValue("category"),
+			"tags":     r.FormValue("tags"), // Might need further processing
+		},
+	}
+
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+
+	// Upload video to cloud storage
+	videoID, err := storage.UploadVideo(ctx, file, video.Metadata)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer client.Close()
 
-	// Upload video file to Cloud Storage
-	wc := client.Bucket("video-bucket").Object(uuid.New().String()).NewWriter(ctx)
-	if _, err = io.Copy(wc, file); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := wc.Close(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	video.UpdateID(videoID)
 }
