@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"vdo-be/internal/domain/video"
-	"vdo-be/internal/infra/storage"
+	"vdo-be/internal/infra/storage/gcp"
 )
 
 func uploadVideo(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,7 @@ func uploadVideo(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
 	// Upload video to cloud storage
-	videoID, err := storage.UploadVideo(ctx, file, video.Metadata)
+	videoID, err := gcp.UploadVideo(ctx, file, video.Metadata)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

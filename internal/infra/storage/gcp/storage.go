@@ -1,16 +1,17 @@
-package storage
+package gcp
 
 import (
 	"context"
 	"io"
 	"mime/multipart"
 
+	"cloud.google.com/go/storage"
 	"github.com/google/uuid"
 )
 
 // UploadVideo uploads a video file to Google Cloud Storage
 func UploadVideo(ctx context.Context, file multipart.File, metadata map[string]string) (string, error) {
-	client, err := NewClient(ctx)
+	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return "", err
 	}
