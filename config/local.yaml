@@ -1,0 +1,4 @@
+# appConfig:
+#   env: "local"
+#   app_domain: "localhost:4200"
+#   api_domain: "localhost:8080"
