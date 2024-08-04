@@ -1,23 +1,34 @@
 package handler
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
+	"vdo-be/pkg/api"
 )
 
 func uploadVideo() http.Handler {
+
+	type request struct {
+		FileName string `json:"fileName"`
+		Title    string `json:"title"`
+		Category string `json:"category"`
+		Tags     string `json:"tags"`
+	}
+
 	type response struct {
-		Greeting string `json:"greeting"`
+		FileName string `json:"fileName"`
+		Title    string `json:"title"`
+		Category string `json:"category"`
+		Tags     string `json:"tags"`
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Parse form data and extract video file
-		// file, _, err := r.FormFile("video")
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusBadRequest)
-		// 	return
-		// }
-		// defer file.Close()
+		var req request
+		req, err := decode[request](w, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		// Create video domain object with metadata
 		// video := &video.Video{
@@ -46,7 +57,14 @@ func uploadVideo() http.Handler {
 		// 	return
 		// }
 
-		if err := json.NewEncoder(w).Encode(response{Greeting: "Upload video"}); err != nil {
+		resp := response{
+			FileName: req.FileName,
+			Title:    req.Title,
+			Category: req.Category,
+			Tags:     fmt.Sprintf("Tags: %s", req.Tags),
+		}
+
+		if err := api.WriteResponse(w, http.StatusCreated, resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
